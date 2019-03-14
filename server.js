@@ -21,16 +21,18 @@ const wss = new SocketServer({ server });
 
 let onlineUsers = 0;
 
+let userColors = ['#3d51e2', '#2CA3DD', '#7536E1', '#6070E8'];
+
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
-  // Sending & Displaying number of online users
+  // Sending & Displaying number of online users & assign color
   onlineUsers += 1;
-  console.log(onlineUsers);
+  ws.uniqueColor = userColors[onlineUsers % 4];
 
   let numberOfUsers = JSON.stringify({
     type: "userCountChanged",
-    userCount: onlineUsers
+    userCount: onlineUsers,
   })
 
   wss.clients.forEach(function each(client) {
@@ -50,7 +52,8 @@ wss.on('connection', (ws) => {
           id: uuidv1(), 
           username: obj.username, 
           content: obj.content, 
-          type: "incomingMessage"});
+          type: "incomingMessage",
+          color: ws.uniqueColor});
 
         wss.clients.forEach(function each(client) {
           if (client.readyState === WebSocketServer.OPEN) {
