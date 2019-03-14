@@ -23,14 +23,31 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     let id = uuidv4();
     let obj = JSON.parse(message)
-    console.log(`User ${obj.username} said ${obj.content}`);
-    let uniqueMessage = JSON.stringify({id: id, username: obj.username, content: obj.content});
+    if (obj.type === 'postMessage') {
+      let uniqueMessage = JSON.stringify({id: id, username: obj.username, content: obj.content, type: "incomingMessage"});
+      // console.log(obj);
+      // console.log(obj.content);
+      // console.log(obj.username);
+
+      wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocketServer.OPEN) {
+          client.send(uniqueMessage);
+        }
+      });
+    } else if (obj.type === 'postNotification') {
+      let uniqueMessage = JSON.stringify({id: id, username: obj.username, content: obj.content, type: "incomingNotification"});
     
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocketServer.OPEN) {
-        client.send(uniqueMessage);
-      }
-    });
+      wss.clients.forEach(function each(client) {
+        if (client.readyState === WebSocketServer.OPEN) {
+          client.send(uniqueMessage);
+        }
+      })
+    }
+
+    // console.log(obj.content);
+    // // console.log(`User ${obj.username} said ${obj.content}`);
+    // console.log(obj.username);
+
   });
 
   
