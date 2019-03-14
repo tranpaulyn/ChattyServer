@@ -1,6 +1,6 @@
 const express = require('express');
 const SocketServer = require('ws').Server;
-const uuidv4 = require('uuid/v4');
+const uuidv1 = require('uuid/v1');
 const WebSocketServer = require('ws');
 
 // Set the port to 3001
@@ -21,16 +21,37 @@ const wss = new SocketServer({ server });
 wss.on('connection', (ws) => {
   console.log('Client connected');
   ws.on('message', (message) => {
-    let id = uuidv4();
     let obj = JSON.parse(message)
-    console.log(`User ${obj.username} said ${obj.content}`);
-    let uniqueMessage = JSON.stringify({id: id, username: obj.username, content: obj.content});
-    
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocketServer.OPEN) {
-        client.send(uniqueMessage);
-      }
-    });
+
+    switch(obj.type) {
+      case "postMessage":
+        let uniqueMessage = JSON.stringify({
+          id: uuidv1(), 
+          username: obj.username, 
+          content: obj.content, 
+          type: "incomingMessage"});
+
+        wss.clients.forEach(function each(client) {
+          if (client.readyState === WebSocketServer.OPEN) {
+            client.send(uniqueMessage);
+          }
+        });
+        break;
+      case "postNotification":
+        let uniqueNotification = JSON.stringify({
+          id: uuidv1(), 
+          username: obj.username, 
+          content: obj.content, 
+          type: "incomingNotification"});
+      
+        wss.clients.forEach(function each(client) {
+          if (client.readyState === WebSocketServer.OPEN) {
+            client.send(uniqueNotification);
+          }
+        });
+        break;
+    }
+
   });
 
   
