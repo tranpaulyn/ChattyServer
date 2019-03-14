@@ -74,6 +74,19 @@ wss.on('connection', (ws) => {
           }
         });
         break;
+      case "postImage":
+        let image = JSON.stringify({
+          id: uuidv1(), 
+          username: obj.username, 
+          content: obj.content, 
+          type: "incomingImage",
+          color: ws.uniqueColor});
+          wss.clients.forEach(function each(client) {
+            if (client.readyState === WebSocketServer.OPEN) {
+              client.send(image);
+            }
+          });
+      break;
     }
 
 
